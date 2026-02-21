@@ -1,4 +1,4 @@
-import { Client, GatewayIntentBits, Partials, EmbedBuilder, ChannelType } from "discord.js"
+import { Client, GatewayIntentBits, Partials, EmbedBuilder, ChannelType, PermissionsBitField } from "discord.js"
 import "dotenv/config"
 import path from "path"
 import express from "express"
