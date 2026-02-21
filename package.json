@@ -1,0 +1,24 @@
+{
+  "name": "kekse-clan-bot",
+  "version": "1.0.0",
+  "description": "Moderations- und Support-Bot für den Kekse Clan",
+  "main": "app.js",
+  "type": "module",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "node --watch app.js"
+  },
+  "keywords": [
+    "discord",
+    "bot",
+    "modmail",
+    "kekse-clan"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "discord.js": "^14.14.1",
+    "dotenv": "^16.4.5",
+    "express": "^4.18.3"
+  }
+}
