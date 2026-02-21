@@ -78,6 +78,10 @@ export async function setDData(key, value) {
   await storageMessage.edit({ embeds: [embed] }).catch(console.error);
   
 }
+const STORAGE_CHANNEL_ID = "1474153763647389860";
+
+let storageMessage = null;
+let data = {};
 async function initRemindersStorage(client) {
   const channel = await client.channels.fetch(STORAGE_CHANNEL_ID).catch(() => null);
   if (!channel || !channel.isTextBased()) return;
