@@ -79,8 +79,6 @@ export async function setDData(key, value) {
   
 }
 
-let storageMessage = null;
-let data = {};
 async function initRemindersStorage(client) {
   const channel = await client.channels.fetch(STORAGE_CHANNEL_ID).catch(() => null);
   if (!channel || !channel.isTextBased()) return;
