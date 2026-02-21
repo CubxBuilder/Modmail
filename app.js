@@ -423,11 +423,11 @@ client.once("ready", async () => {
     registerMessageCommands(client);
     initReminder(client);
 })
-client.user.setPresence({
-    activities: [{ name: "DM to talk with moderators", type: 0 }],
-    status: "online"
-  });
 client.setMaxListeners(20);
 client.on("error", console.error)
 client.on("warn", console.warn)
 client.login(process.env.BOT_TOKEN)
+client.user.setPresence({
+    activities: [{ name: "DM to talk with moderators", type: 0 }],
+    status: "online"
+  });
