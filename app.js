@@ -133,7 +133,6 @@ const CLOSED_CATEGORY_ID = "1465452886657077593";
 let OPEN_HELP = new Map();
 let MAIN_GUILD = null;
 async function initSupport(client) {
-  const { EmbedBuilder, ChannelType, PermissionsBitField } = require('discord.js');
   MAIN_GUILD = client.guilds.cache.first();
   const savedData = getDData("tickets") || {};
   OPEN_HELP = new Map(Object.entries(savedData));
