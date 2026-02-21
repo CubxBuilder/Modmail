@@ -78,7 +78,6 @@ export async function setDData(key, value) {
   await storageMessage.edit({ embeds: [embed] }).catch(console.error);
   
 }
-const STORAGE_CHANNEL_ID = "1474153763647389860";
 
 let storageMessage = null;
 let data = {};
