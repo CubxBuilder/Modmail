@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kekse Clan Modmail | Bot Profil</title>
+    <style>
+        :root {
+            --bg-color: #0f1011;
+            --card-bg: #18191c;
+            --text-main: #ffffff;
+            --text-muted: #b9bbbe;
+            --accent: #ffffff;
+            --border-radius: 12px;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .profile-card {
+            background-color: var(--card-bg);
+            width: 100%;
+            max-width: 450px;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            text-align: center;
+            padding-bottom: 30px;
+        }
+
+        .banner {
+            height: 100px;
+            background: linear-gradient(45deg, #2c2f33, #23272a);
+        }
+
+        .avatar-container {
+            margin-top: -60px;
+            position: relative;
+        }
+
+        .avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 6px solid var(--card-bg);
+            background-color: var(--card-bg);
+        }
+
+        h1 { margin: 15px 0 5px; font-size: 24px; }
+        .tag { color: var(--text-muted); font-size: 14px; margin-bottom: 20px; }
+
+        .content { padding: 0 30px; text-align: left; }
+        
+        .section-title {
+            text-transform: uppercase;
+            font-size: 12px;
+            font-weight: bold;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+            border-bottom: 1px solid #2f3136;
+            padding-bottom: 5px;
+        }
+
+        .feature-list { list-style: none; padding: 0; margin-bottom: 25px; }
+        .feature-list li {
+            font-size: 14px;
+            color: var(--text-main);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+        }
+        .feature-list li::before { content: "•"; color: var(--accent); font-weight: bold; width: 20px; }
+
+        .links {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .link-item {
+            background: #2f3136;
+            padding: 10px;
+            border-radius: 6px;
+            text-decoration: none;
+            color: var(--text-main);
+            font-size: 14px;
+            transition: background 0.2s;
+            display: flex;
+            justify-content: space-between;
+        }
+        .link-item:hover { background: #3c3f44; }
+        .link-item span { color: var(--text-muted); }
+
+        footer {
+            margin-top: 20px;
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+
+<div class="profile-card">
+    <div class="banner"></div>
+    <div class="avatar-container">
+        <img src="https://cdn.discordapp.com/app-icons/1474601200753311936/87706d29491701f1288f5ac5727275d9.png?size=512" alt="Bot Logo" class="avatar">
+    </div>
+
+    <h1>Kekse Clan Modmail</h1>
+    <div class="tag">Professionelles Support-System</div>
+
+    <div class="content">
+        <div class="section-title">Funktionen</div>
+        <ul class="feature-list">
+            <li>Forum-basiertes Ticket-System</li>
+            <li>Direkte Echtzeit-Kommunikation per DM</li>
+            <li>Integrierte Warn- & Claim-Funktionen</li>
+            <li>Automatisierte Archivierung</li>
+            <li>Anhänge & Media-Support</li>
+        </ul>
+
+        <div class="section-title">Kontakt & Support</div>
+        <div class="links">
+            <a href="mailto:CubeBuilder@web.de" class="link-item">Email <span>CubeBuilder@web.de</span></a>
+            <a href="https://github.com/CubxBuilder" target="_blank" class="link-item">GitHub <span>github.com/CubxBuilder</span></a>
+        </div>
+    </div>
+
+    <footer>&copy; 2026 Fabian Lehradt</footer>
+</div>
+</body>
+</html>
