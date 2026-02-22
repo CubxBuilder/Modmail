@@ -34,7 +34,7 @@ let dataD = {};
 let storageMessageR = null;
 let dataR = {};
 async function initDmTicketsStorage(client) {
-  const channel = await client.channels.fetch(STORAGE_CHANNEL_ID).catch(() => null);
+  const channel = await client.channels.fetch(DSTORAGE_CHANNEL_ID).catch(() => null);
   if (!channel || !channel.isTextBased()) return;
 
   const messages = await channel.messages.fetch({ limit: 20 });
