@@ -1,4 +1,4 @@
-import { Client, GatewayIntentBits, Partials, EmbedBuilder, ChannelType, PermissionsBitField } from "discord.js"
+import { Client, GatewayIntentBits, Partials, EmbedBuilder, ChannelType, PermissionsBitField, ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js"
 import "dotenv/config"
 import path from "path"
 import express from "express"
@@ -107,129 +107,145 @@ async function initRemindersStorage(client) {
     }
   }
 }
-
 export function getRData(key) {
   return data[key];
 }
-
 export async function setRData(key, value) {
   if (!storageMessage) return;
-
   data[key] = value;
-
   const jsonString = JSON.stringify(data);
-
   const embed = new EmbedBuilder()
     .setTitle("Storage")
     .setDescription("```json\n" + jsonString + "\n```");
-
   await storageMessage.edit({ embeds: [embed] }).catch(console.error);
-  
 }
-const CATEGORY_ID = "1465790388517474397";
-const LOG_CHANNEL_ID = "1423413348220796991";
+const FORUM_CHANNEL_ID = "1474918563218198548";
 const TEAM_ROLE_ID = "1457906448234319922";
-const CLOSED_CATEGORY_ID = "1465452886657077593";
-let OPEN_HELP = new Map();
-let MAIN_GUILD = null;
-async function initSupport(client) {
-  MAIN_GUILD = client.guilds.cache.first();
-  const savedData = getDData("tickets") || {};
-  OPEN_HELP = new Map(Object.entries(savedData));
-  const sendKekseLog = async (action, user, details) => {
-    const logChannel = client.channels.cache.get(LOG_CHANNEL_ID);
-    if (!logChannel) return;
-    const logEmbed = new EmbedBuilder()
-      .setColor('#ffffff')
-      .setAuthor({ 
-          name: user.tag, 
-          iconURL: user.displayAvatarURL({ size: 512 }) 
-      })
-      .setDescription(`**Aktion:** \`${action}\`\n${details}`)
-      .setFooter({ text: 'Kekse Clan | Modmail System' })
-      .setTimestamp();
-    await logChannel.send({ embeds: [logEmbed] }).catch(() => {});
-  };
-  client.on("messageCreate", async (msg) => {
-    if (msg.author.bot) return;
-    if (msg.channel.type === ChannelType.DM) {
-      let channelId = OPEN_HELP.get(msg.author.id);
-      let ticketChannel = channelId ? MAIN_GUILD.channels.cache.get(channelId) : null;
-      if (!ticketChannel) {
-        const lastId = getDData("last_ticket_id") || 0;
-        const nextId = lastId + 1;
-        const index = String(nextId).padStart(4, "0");
-        try {
-          ticketChannel = await MAIN_GUILD.channels.create({
-            name: `modmail-${msg.author.username}-${index}`,
-            type: ChannelType.GuildText,
-            parent: CATEGORY_ID,
-            permissionOverwrites: [
-              { id: MAIN_GUILD.id, deny: [PermissionsBitField.Flags.ViewChannel] },
-              { id: TEAM_ROLE_ID, allow: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.SendMessages] }
-            ]
-          });
-          OPEN_HELP.set(msg.author.id, ticketChannel.id);
-          await setDData("tickets", Object.fromEntries(OPEN_HELP));
-          await setDData("last_ticket_id", nextId);
-          const startEmbed = new EmbedBuilder()
-            .setTitle("Support-Anfrage erstellt")
-            .setDescription("Deine Nachricht wurde an das Team weitergeleitet. Bitte hab ein wenig Geduld.")
-            .setColor("#ffffff")
-            .setFooter({ text: "Kekse Clan Modmail" });
-          await msg.author.send({ embeds: [startEmbed] }).catch(() => {});
-          await ticketChannel.send({ content: `<@&${TEAM_ROLE_ID}> **Neues Ticket von ${msg.author.tag}**` });
-          await sendKekseLog("Ticket geöffnet", msg.author, `**Kanal:** ${ticketChannel}\n**ID:** \`${index}\``);
-        } catch (err) {
-          console.error("Fehler beim Erstellen des Modmail-Channels:", err);
-          return msg.author.send("❌ Fehler: Ticket konnte nicht erstellt werden. Kontaktiere einen Admin.");
+export async function initSupport(client) {
+    const savedData = getDData("tickets") || {};
+    let OPEN_HELP = new Map(Object.entries(savedData));
+    const getAccountAge = (createdAt) => {
+        const diff = Date.now() - createdAt.getTime();
+        const years = Math.floor(diff / (1000 * 60 * 60 * 24 * 365.25));
+        return years === 0 ? "Weniger als ein Jahr" : `${years} Jahre`;
+    };
+    client.on("messageCreate", async (msg) => {
+        if (msg.author.bot) return;
+        if (msg.channel.type === ChannelType.DM) {
+            let threadId = OPEN_HELP.get(msg.author.id);
+            let thread = threadId ? await client.channels.fetch(threadId).catch(() => null) : null;
+            if (!thread) {
+                const forumChannel = await client.channels.fetch(FORUM_CHANNEL_ID).catch(() => null);
+                if (!forumChannel) return console.error("Forum Channel nicht gefunden!");
+
+                const lastId = (getDData("last_ticket_id") || 0) + 1;
+                const ticketIndex = String(lastId).padStart(4, "0");
+                thread = await forumChannel.threads.create({
+                    name: `Ticket #${ticketIndex} - ${msg.author.username}`,
+                    message: {
+                        content: `<@&${TEAM_ROLE_ID}> - Neues Ticket von ${msg.author}!`,
+                        embeds: [
+                            new EmbedBuilder()
+                                .setTitle("🎫 Neues Support-Ticket")
+                                .setColor("#ffffff")
+                                .setThumbnail(msg.author.displayAvatarURL())
+                                .addFields(
+                                    { name: "User", value: `${msg.author.tag} (${msg.author.id})`, inline: true },
+                                    { name: "Account erstellt", value: getAccountAge(msg.author.createdAt), inline: true },
+                                    { name: "Erste Nachricht", value: msg.content || "*Anhang*" }
+                                )
+                                .setImage(msg.author.displayAvatarURL({ size: 1024 }))
+                                .setFooter({ text: "🎯 Nutze die Buttons unten zur Verwaltung" })
+                        ],
+                        components: [
+                            new ActionRowBuilder().addComponents(
+                                new ButtonBuilder().setCustomId("ticket_claim").setLabel("Claim Ticket").setStyle(ButtonStyle.Success).setEmoji("🙋‍♂️"),
+                                new ButtonBuilder().setCustomId("ticket_warn").setLabel("User warnen").setStyle(ButtonStyle.Secondary).setEmoji("⚠️"),
+                                new ButtonBuilder().setCustomId("ticket_delete").setLabel("Ticket Schließen").setStyle(ButtonStyle.Danger).setEmoji("🔒")
+                            )
+                        ]
+                    }
+                });
+                OPEN_HELP.set(msg.author.id, thread.id);
+                await setDData("tickets", Object.fromEntries(OPEN_HELP));
+                await setDData("last_ticket_id", lastId);
+                const userConfirm = new EmbedBuilder()
+                    .setTitle("✅ Ticket erstellt!")
+                    .setDescription(`Dein Support-Ticket wurde erfolgreich erstellt!\n\n💬 Schreibe hier weiter, um mit dem Team zu kommunizieren.\n⏱️ Ein Teammitglied wird sich bald bei dir melden!`)
+                    .setColor("#ffffff")
+                    .setFooter({ text: `Ticket #${ticketIndex}` })
+                    .setTimestamp();
+                await msg.author.send({ embeds: [userConfirm] }).catch(() => {});
+            } else {
+                const relayEmbed = new EmbedBuilder()
+                    .setAuthor({ name: msg.author.username, iconURL: msg.author.displayAvatarURL() })
+                    .setDescription(msg.content || "*Kein Textinhalt*")
+                    .setColor("#ffffff")
+                    .setTimestamp();
+                if (msg.attachments.size > 0) relayEmbed.setImage(msg.attachments.first().url);
+                await thread.send({ embeds: [relayEmbed] });
+            }
         }
-      }
-      const userMsgEmbed = new EmbedBuilder()
-        .setAuthor({ name: msg.author.username, iconURL: msg.author.displayAvatarURL() })
-        .setDescription(msg.content || "*Kein Textinhalt*")
-        .setColor("#ffffff")
-        .setTimestamp();
-      if (msg.attachments.size > 0) {
-        userMsgEmbed.setImage(msg.attachments.first().url);
-      }
-      await ticketChannel.send({ embeds: [userMsgEmbed] });
-      return;
-    }
-    if (msg.guild && msg.channel.parentId === CATEGORY_ID) {
-      const entry = [...OPEN_HELP.entries()].find(([uId, cId]) => cId === msg.channel.id);
-      if (!entry) return;
-      const userId = entry[0];
-      if (msg.content.toLowerCase() === ".close") {
-        const user = await client.users.fetch(userId).catch(() => null);
-        const closeMsg = "Die Support-Verbindung wurde getrennt. Dein Ticket wurde archiviert.";
-        try {
-          await msg.channel.setParent(CLOSED_CATEGORY_ID, { lockPermissions: false });
-          await msg.channel.send(`**Ticket archiviert durch ${msg.author.username}**`);
-          if (user) await user.send(closeMsg).catch(() => {});
-          OPEN_HELP.delete(userId);
-          await setDData("tickets", Object.fromEntries(OPEN_HELP));
-          await sendKekseLog("Ticket archiviert", msg.author, `**Kanal:** ${msg.channel.name}\n**User:** <@${userId}>`);
-        } catch (err) {
-          msg.channel.send("❌ Fehler beim Archivieren des Kanals.");
+        if (msg.guild && msg.channel.isThread() && msg.channel.parentId === FORUM_CHANNEL_ID) {
+            const entry = [...OPEN_HELP.entries()].find(([uId, tId]) => tId === msg.channel.id);
+            if (!entry) return;
+            const userId = entry[0];
+            const targetUser = await client.users.fetch(userId).catch(() => null);
+            if (targetUser) {
+                const staffEmbed = new EmbedBuilder()
+                    .setAuthor({ name: "Kekse Clan Support", iconURL: client.user.displayAvatarURL() })
+                    .setTitle("💬 Antwort vom Support-Team")
+                    .setDescription(msg.content)
+                    .setColor("#ffffff")
+                    .setFooter({ text: "Antworte direkt auf diese DM, um mit uns zu schreiben." });
+                if (msg.attachments.size > 0) staffEmbed.setImage(msg.attachments.first().url);
+                await targetUser.send({ embeds: [staffEmbed] })
+                    .then(() => msg.react("✅"))
+                    .catch(() => msg.channel.send("❌ DMs des Users sind deaktiviert."));
+            }
         }
-        return;
-      }
-      const targetUser = await client.users.fetch(userId).catch(() => null);
-      if (!targetUser) return msg.channel.send("❌ Fehler: User konnte nicht im Cache gefunden werden.");
-      const staffEmbed = new EmbedBuilder()
-        .setAuthor({ name: "Kekse Clan Support", iconURL: client.user.displayAvatarURL() })
-        .setDescription(msg.content)
-        .setColor("#ffffff")
-        .setFooter({ text: "Antworte direkt auf diese DM, um mit uns zu schreiben." });
-      if (msg.attachments.size > 0) {
-        staffEmbed.setImage(msg.attachments.first().url);
-      }
-      await targetUser.send({ embeds: [staffEmbed] })
-        .then(() => msg.react("✅"))
-        .catch(() => msg.channel.send("❌ Fehler: Nachricht konnte nicht gesendet werden (DMs beim User deaktiviert)."));
-    }
-  });
+    });
+    client.on("interactionCreate", async (interaction) => {
+        if (!interaction.isButton()) return;   
+        const entry = [...OPEN_HELP.entries()].find(([uId, tId]) => tId === interaction.channelId);
+        if (!entry) return;
+        const userId = entry[0];
+        if (interaction.customId === "ticket_claim") {
+            await interaction.reply({ content: `🙋‍♂️ **${interaction.user.username}** hat dieses Ticket übernommen.` });
+        }
+        if (interaction.customId === "ticket_warn") {
+            const user = await client.users.fetch(userId).catch(() => null);
+            if (user) {
+                const warnEmbed = new EmbedBuilder()
+                    .setTitle("⚠️ Warnung vom Support-Team")
+                    .setDescription(`Du wurdest von ${interaction.user.username} verwarnt.\nBitte achte auf einen respektvollen Umgangston. Wir sind hier, um dir zu helfen, erwarten aber Höflichkeit.`)
+                    .setColor("#F78420");
+                await user.send({ embeds: [warnEmbed] }).catch(() => {});
+                await interaction.reply({ content: "⚠️ Warnung gesendet.", ephemeral: true });
+            }
+        }
+                if (interaction.customId === "ticket_delete") {
+            const user = await client.users.fetch(userId).catch(() => null);
+            if (user) {
+                await user.send("🔒 **Ticket geschlossen.** Deine Anfrage wurde archiviert. Schreibe eine neue Nachricht, um ein neues Ticket zu eröffnen.").catch(() => {});
+            }
+            await interaction.reply("🔒 Ticket wird archiviert und geschlossen...");
+            OPEN_HELP.delete(userId);
+            await setDData("tickets", Object.fromEntries(OPEN_HELP));
+            setTimeout(async () => {
+                try {
+                    await interaction.channel.edit({
+                        name: `[Closed] ${interaction.channel.name}`,
+                        archived: true,
+                        locked: true
+                    });
+                } catch (err) {
+                    console.error("Fehler beim Archivieren des Forum-Threads:", err);
+                }
+            }, 3000);
+        }
+
+    });
 }
 function registerMessageCommands(client) {
   client.on("messageCreate", async (msg) => {
