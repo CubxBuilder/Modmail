@@ -123,6 +123,7 @@ export async function setRData(key, value) {
 }
 const FORUM_CHANNEL_ID = "1474918563218198548";
 const TEAM_ROLE_ID = "1457906448234319922";
+const LOG_CHANNEL_ID = "1423413348220796991";
 export async function initSupport(client) {
     const savedData = getDData("tickets") || {};
     let OPEN_HELP = new Map(Object.entries(savedData));
