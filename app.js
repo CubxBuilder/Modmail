@@ -27,97 +27,99 @@ const client = new Client({
     Partials.GuildMember, Partials.User, Partials.ThreadMember
     ]
 });
-const STORAGE_CHANNEL_ID = "1474153763647389860";
-
-let storageMessage = null;
-let data = {};
+const DSTORAGE_CHANNEL_ID = "1474153763647389860";
+const RSTORAGE_CHANNEL_ID = "1474144083105808556";
+let storageMessageD = null;
+let dataD = {};
+let storageMessageR = null;
+let dataR = {};
 async function initDmTicketsStorage(client) {
   const channel = await client.channels.fetch(STORAGE_CHANNEL_ID).catch(() => null);
   if (!channel || !channel.isTextBased()) return;
 
   const messages = await channel.messages.fetch({ limit: 20 });
-  storageMessage = messages.find(
+  storageMessageD = messages.find(
     m => m.author.id === client.user.id && m.embeds.length > 0
   );
 
-  if (!storageMessage) {
-    data = { _init: true };
+  if (!storageMessageD) {
+    dataD = { _init: true };
     const embed = new EmbedBuilder()
       .setTitle("Storage")
-      .setDescription("```json\n" + JSON.stringify(data) + "\n```");
+      .setDescription("```json\n" + JSON.stringify(dataD) + "\n```");
 
-    storageMessage = await channel.send({ embeds: [embed] });
+    storageMessageD = await channel.send({ embeds: [embed] });
   } else {
     try {
-      const raw = storageMessage.embeds[0].description
+      const raw = storageMessageD.embeds[0].description
         .replace("```json\n", "")
         .replace("\n```", "");
 
-      data = JSON.parse(raw);
+      dataD = JSON.parse(raw);
     } catch {
-      data = { _init: true };
+      dataD = { _init: true };
     }
   }
 }
 
 export function getDData(key) {
-  return data[key];
+  return dataD[key];
 }
 
 export async function setDData(key, value) {
-  if (!storageMessage) return;
+  if (!storageMessageD) return;
 
-  data[key] = value;
+  dataD[key] = value;
 
-  const jsonString = JSON.stringify(data);
+  const jsonString = JSON.stringify(dataD);
 
   const embed = new EmbedBuilder()
     .setTitle("Storage")
     .setDescription("```json\n" + jsonString + "\n```");
 
-  await storageMessage.edit({ embeds: [embed] }).catch(console.error);
+  await storageMessageD.edit({ embeds: [embed] }).catch(console.error);
   
 }
 
 async function initRemindersStorage(client) {
-  const channel = await client.channels.fetch(STORAGE_CHANNEL_ID).catch(() => null);
+  const channel = await client.channels.fetch(RSTORAGE_CHANNEL_ID).catch(() => null);
   if (!channel || !channel.isTextBased()) return;
 
   const messages = await channel.messages.fetch({ limit: 20 });
-  storageMessage = messages.find(
+  storageMessageR = messages.find(
     m => m.author.id === client.user.id && m.embeds.length > 0
   );
 
-  if (!storageMessage) {
-    data = { _init: true };
+  if (!storageMessageR) {
+    dataR = { _init: true };
     const embed = new EmbedBuilder()
       .setTitle("Storage")
-      .setDescription("```json\n" + JSON.stringify(data) + "\n```");
+      .setDescription("```json\n" + JSON.stringify(dataR) + "\n```");
 
-    storageMessage = await channel.send({ embeds: [embed] });
+    storageMessageR = await channel.send({ embeds: [embed] });
   } else {
     try {
-      const raw = storageMessage.embeds[0].description
+      const raw = storageMessageR.embeds[0].description
         .replace("```json\n", "")
         .replace("\n```", "");
 
-      data = JSON.parse(raw);
+      dataR = JSON.parse(raw);
     } catch {
-      data = { _init: true };
+      dataR = { _init: true };
     }
   }
 }
 export function getRData(key) {
-  return data[key];
+  return dataR[key];
 }
 export async function setRData(key, value) {
-  if (!storageMessage) return;
-  data[key] = value;
-  const jsonString = JSON.stringify(data);
+  if (!storageMessageR) return;
+  dataR[key] = value;
+  const jsonString = JSON.stringify(dataR);
   const embed = new EmbedBuilder()
     .setTitle("Storage")
     .setDescription("```json\n" + jsonString + "\n```");
-  await storageMessage.edit({ embeds: [embed] }).catch(console.error);
+  await storageMessageR.edit({ embeds: [embed] }).catch(console.error);
 }
 const FORUM_CHANNEL_ID = "1474918563218198548";
 const TEAM_ROLE_ID = "1457906448234319922";
