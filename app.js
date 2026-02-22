@@ -154,7 +154,6 @@ export async function initSupport(client) {
                                     { name: "Account erstellt", value: getAccountAge(msg.author.createdAt), inline: true },
                                     { name: "Erste Nachricht", value: msg.content || "*Anhang*" }
                                 )
-                                .setImage(msg.author.displayAvatarURL({ size: 1024 }))
                                 .setFooter({ text: "🎯 Nutze die Buttons unten zur Verwaltung" })
                         ],
                         components: [
